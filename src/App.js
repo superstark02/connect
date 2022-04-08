@@ -15,6 +15,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 
 const INFINITY = Number.MAX_SAFE_INTEGER;
 
@@ -110,7 +111,8 @@ class App extends React.Component {
     ],
     person1: null,
     person2: null,
-    degree: null
+    degree: null,
+    name: "Some Name"
   }
 
   handleClickOpen = (item) => {
@@ -156,9 +158,31 @@ class App extends React.Component {
     this.setState({ network: temp });
 
     temp = this.state.people
-    temp[a].friends.splice(temp[a].friends.indexOf(b),1)
-    temp[b].friends.splice(temp[b].friends.indexOf(a),1)
+    temp[a].friends.splice(temp[a].friends.indexOf(b), 1)
+    temp[b].friends.splice(temp[b].friends.indexOf(a), 1)
     this.setState({ people: temp })
+  }
+
+  add_person = () => {
+    if (this.state.name) {
+      var temp = this.state.network
+      var temp_row = []
+      for (var i = 0; i < this.state.length + 1; i++) {
+        temp_row.push(0)
+      }
+      temp_row[this.state.network.length] = 1;
+      temp.push(temp_row);
+      this.setState({ network: temp });
+
+      temp = this.state.people;
+      temp.push({ name: this.state.name, id: this.state.people.length, friends: [] });
+      this.setState({ people: temp });
+      console.log(this.state.people, this.state.network)
+    }
+  }
+
+  handleName = (e) => {
+    this.setState({ name: e.target.value })
   }
 
   render() {
@@ -174,7 +198,10 @@ class App extends React.Component {
 
         <div style={{ display: 'flex', justifyContent: "space-between", height: "100%" }} >
           <div className='cont-30' >
-            <Button variant="outlined"><AddIcon />ADD</Button>
+            <div style={{ margin: "10px 0px" }} >
+              <TextField id="standard-basic" label="Name Of Person" onChange={this.handleName} variant="standard" />
+            </div>
+            <Button onClick={this.add_person} variant="outlined"><AddIcon />ADD</Button>
             <p>
               You can add new people using the given button.
               <br />
