@@ -16,6 +16,55 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
+const INFINITY = Number.MAX_SAFE_INTEGER;
+
+function findDegree(Graph, n, start, dest) {
+  var cost = Array.from(Array(n), () => new Array(n)), distance = Array(n), pred = Array(n);
+  var visited = [n], count, mindistance, nextnode, i, j;
+
+  // Creating cost matrix
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+      if (Graph[i][j] === 0)
+        cost[i][j] = INFINITY;
+      else
+        cost[i][j] = Graph[i][j];
+
+  for (i = 0; i < n; i++) {
+    distance[i] = cost[start][i];
+    pred[i] = start;
+    visited[i] = 0;
+  }
+
+  distance[start] = 0;
+  visited[start] = 1;
+  count = 1;
+
+  while (count < n - 1) {
+    mindistance = INFINITY;
+
+    for (i = 0; i < n; i++)
+      if (distance[i] < mindistance && !visited[i]) {
+        mindistance = distance[i];
+        nextnode = i;
+      }
+
+    visited[nextnode] = 1;
+    for (i = 0; i < n; i++)
+      if (!visited[i])
+        if (mindistance + cost[nextnode][i] < distance[i]) {
+          distance[i] = mindistance + cost[nextnode][i];
+          pred[i] = nextnode;
+        }
+    count++;
+  }
+
+  // Printing the distance
+  for (i = 0; i < n; i++)
+    if (i === dest) {
+      return distance[i];
+    }
+}
 
 class App extends React.Component {
   state = {
@@ -60,7 +109,8 @@ class App extends React.Component {
       [0, 0, 0, 0, 1]
     ],
     person1: null,
-    person2: null
+    person2: null,
+    degree: null
   }
 
   handleClickOpen = (item) => {
@@ -81,21 +131,35 @@ class App extends React.Component {
       this.setState({ network: temp });
 
       temp = this.state.people
-      temp[a].friends.push(this.state.people[b].name)
-      temp[b].friends.push(this.state.people[a].name)
+      temp[a].friends.push(this.state.people[b].id)
+      temp[b].friends.push(this.state.people[a].id)
       this.setState({ people: temp })
     }
-
-    console.log(this.state.people[a], this.state.people[b])
   }
 
   handleChange = (event) => {
-    this.setState({person1:event.target.value});
+    this.setState({ person1: event.target.value });
   };
 
   handleChange2 = (event) => {
-    this.setState({person2:event.target.value});
+    this.setState({ person2: event.target.value });
   };
+
+  calculate = () => {
+    this.setState({ degree: findDegree(this.state.network, this.state.network[0].length, this.state.person1, this.state.person2) })
+  }
+
+  remove_as_friend = (a, b) => {
+    var temp = this.state.network;
+    temp[a][b] = 0;
+    temp[b][a] = 0;
+    this.setState({ network: temp });
+
+    temp = this.state.people
+    temp[a].friends.splice(temp[a].friends.indexOf(b),1)
+    temp[b].friends.splice(temp[b].friends.indexOf(a),1)
+    this.setState({ people: temp })
+  }
 
   render() {
     return (
@@ -168,8 +232,8 @@ class App extends React.Component {
                     label="Person 1"
                   >
                     {
-                      this.state.people.map((item,index)=>{
-                        return(
+                      this.state.people.map((item, index) => {
+                        return (
                           <MenuItem value={index}>{item.name}</MenuItem>
                         )
                       })
@@ -188,8 +252,8 @@ class App extends React.Component {
                     label="Person 2"
                   >
                     {
-                      this.state.people.map((item,index)=>{
-                        return(
+                      this.state.people.map((item, index) => {
+                        return (
                           <MenuItem value={index}>{item.name}</MenuItem>
                         )
                       })
@@ -198,8 +262,17 @@ class App extends React.Component {
                 </FormControl>
               </div>
               <div>
-                <Button>Calculate</Button>
+                <Button onClick={this.calculate} >Calculate</Button>
               </div>
+              {
+                this.state.degree ? (
+                  <div style={{ padding: '0px 10px' }} >
+                    Degree: {this.state.degree}
+                  </div>
+                ) : (
+                  <div></div>
+                )
+              }
             </div>
           </div>
         </div>
@@ -218,23 +291,34 @@ class App extends React.Component {
               <div>
                 Friends ({this.state.selected.friends.length}): {
                   this.state.selected.friends.map(item => {
-                    return item + " "
+                    return this.state.people[item].name + " "
                   })
                 }
               </div>
 
               <div>
                 {this.state.people.map((item, index) => {
-                  return (
-                    <div className='list-item' style={{ width: "500px", display: "flex", justifyContent: "space-between", alignContent: "center" }} >
-                      <div>
-                        {item.name}
+                  if (this.state.selected.id !== index) {
+                    return (
+                      <div className='list-item' style={{ width: "500px", display: "flex", justifyContent: "space-between", alignContent: "center" }} >
+                        <div>
+                          {item.name}
+                        </div>
+                        {
+                          this.state.network[this.state.selected.id][index] === 0 ? (
+                            <div className='add-frnd' onClick={() => { this.add_as_friend(this.state.selected.id, index) }} >
+                              ADD AS FRIEND
+                            </div>
+                          ) : (
+                            <div className='remove-frnd' onClick={() => { this.remove_as_friend(this.state.selected.id, index) }} >
+                              REMOVE AS FRIEND
+                            </div>
+                          )
+                        }
+
                       </div>
-                      <div className='add-frnd' onClick={() => { this.add_as_friend(this.state.selected.id, index) }} >
-                        ADD AS FRIEND
-                      </div>
-                    </div>
-                  )
+                    )
+                  }
                 })}
               </div>
             </DialogContentText>
