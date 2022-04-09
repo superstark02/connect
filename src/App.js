@@ -193,18 +193,6 @@ class App extends React.Component {
     this.setState({ name: e.target.value })
   }
 
-  delete = (id) => {
-    if (this.state.network.length > 0) {
-      var temp = this.state.network;
-      temp.splice(id, 1);
-      this.setState({ network: temp });
-
-      temp = this.state.people;
-      temp.splice(id, 1);
-      this.setState({ people: temp })
-    }
-  }
-
   render() {
     return (
       <div>
@@ -261,9 +249,6 @@ class App extends React.Component {
                         <div style={{ fontSize: "12px", color: 'grey' }} >
                           Connections: {item.friends.length}
                         </div>
-                        <div className="delete" onClick={(index) => { this.delete(index) }} >
-                          Delete
-                        </div>
                       </div>
 
                       <div className='add' onClick={() => { this.handleClickOpen(item) }} >
@@ -278,7 +263,7 @@ class App extends React.Component {
 
           <div className='cont-30' >
             <div className='info' >
-              Total People : {this.state.network[0].length} <br />
+              Total People : {this.state.network.length} <br />
             </div>
             <div className='info' >
               Find Connection
