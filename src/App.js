@@ -63,6 +63,9 @@ function findDegree(Graph, n, start, dest) {
   // Printing the distance
   for (i = 0; i < n; i++)
     if (i === dest) {
+      if (distance[i] === INFINITY) {
+        return "Not connected"
+      }
       return distance[i];
     }
 }
@@ -166,10 +169,15 @@ class App extends React.Component {
   add_person = () => {
     if (this.state.name) {
       var temp = this.state.network
-      var temp_row = []
-      for (var i = 0; i < this.state.length + 1; i++) {
-        temp_row.push(0)
+      var temp_row = Array(this.state.network.length + 1)
+
+      for (i = 0; i < this.state.network.length; i++) {
+        temp[i].push(0);
       }
+      for (var i = 0; i < this.state.network.length + 1; i++) {
+        temp_row[i] = 0;
+      }
+
       temp_row[this.state.network.length] = 1;
       temp.push(temp_row);
       this.setState({ network: temp });
@@ -183,6 +191,18 @@ class App extends React.Component {
 
   handleName = (e) => {
     this.setState({ name: e.target.value })
+  }
+
+  delete = (id) => {
+    if (this.state.network.length > 0) {
+      var temp = this.state.network;
+      temp.splice(id, 1);
+      this.setState({ network: temp });
+
+      temp = this.state.people;
+      temp.splice(id, 1);
+      this.setState({ people: temp })
+    }
   }
 
   render() {
@@ -203,15 +223,30 @@ class App extends React.Component {
             </div>
             <Button onClick={this.add_person} variant="outlined"><AddIcon />ADD</Button>
             <p>
-              You can add new people using the given button.
-              <br />
-              Click on any user to see it's name and connections with their respective connectivity.
+              <li>
+                You can add people using the given button after entering the name.
+              </li>
+              <li>
+                I have added one relationship - Friend as mentoned
+              </li>
+              <li>
+                You can set relationships by adding friends to a person.
+              </li>
+              <li>
+                To know the degree, select the two users and click CALCULATE
+              </li>
+              <li>
+                MATERIAL UI is used for the UI
+              </li>
+              <li>
+                <a href='https://github.com/superstark02/connect' >Github</a>
+              </li>
             </p>
           </div>
 
           <div className='cont-60' >
             {
-              this.state.people.map((item, index) => {
+              this.state.people && this.state.people.map((item, index) => {
                 return (
                   <div key={index} className="list-item" >
                     <div style={{ fontSize: "20px", marginRight: "10px" }} >
@@ -226,7 +261,7 @@ class App extends React.Component {
                         <div style={{ fontSize: "12px", color: 'grey' }} >
                           Connections: {item.friends.length}
                         </div>
-                        <div className="delete" >
+                        <div className="delete" onClick={(index) => { this.delete(index) }} >
                           Delete
                         </div>
                       </div>
